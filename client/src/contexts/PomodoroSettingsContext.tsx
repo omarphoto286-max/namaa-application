@@ -1,11 +1,11 @@
 import { createContext, useContext, useState, ReactNode, useEffect } from "react";
 
 type PomodoroSettings = {
-  workDuration: number;     // مدة العمل بالدقائق
-  shortBreak: number;       // الراحة القصيرة
-  longBreak: number;        // الراحة الطويلة
-  cyclesBeforeLongBreak: number; // عدد الجولات قبل الراحة الطويلة
-  autoStart: boolean;       // بدء تلقائي
+  workDuration: number;
+  shortBreak: number;
+  longBreak: number;
+  cyclesBeforeLongBreak: number;
+  autoStart: boolean;
 };
 
 type PomodoroSettingsContextType = {
@@ -28,7 +28,21 @@ const SettingsContext = createContext<PomodoroSettingsContextType | undefined>(
 export const PomodoroSettingsProvider = ({ children }: { children: ReactNode }) => {
   const [settings, setSettings] = useState<PomodoroSettings>(() => {
     const saved = localStorage.getItem("pomodoro_settings");
-    return saved ? JSON.parse(saved) : defaultSettings;
+
+    if (saved) {
+      const parsed = JSON.parse(saved);
+
+      // تصحيح القيم لو كانت Strings أو undefined
+      return {
+        workDuration: Number(parsed.workDuration) || 25,
+        shortBreak: Number(parsed.shortBreak) || 5,
+        longBreak: Number(parsed.longBreak) || 15,
+        cyclesBeforeLongBreak: Number(parsed.cyclesBeforeLongBreak) || 4,
+        autoStart: Boolean(parsed.autoStart),
+      };
+    }
+
+    return defaultSettings;
   });
 
   const updateSettings = (newSettings: Partial<PomodoroSettings>) => {
@@ -52,6 +66,7 @@ export const PomodoroSettingsProvider = ({ children }: { children: ReactNode }) 
 
 export const usePomodoroSettings = () => {
   const context = useContext(SettingsContext);
-  if (!context) throw new Error("usePomodoroSettings must be used within PomodoroSettingsProvider");
+  if (!context)
+    throw new Error("usePomodoroSettings must be used within PomodoroSettingsProvider");
   return context;
 };
