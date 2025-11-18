@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Moon, Sun, Globe, LogOut } from "lucide-react";
 
 // ⭐ IMPORT CONTEXT — المهم
-import { PomodoroSettingsProvider } from "@/components/PomodoroSettingsContext";
+import { PomodoroSettingsProvider } from "@/contexts/PomodoroSettingsContext";
 
 import NotFound from "@/pages/not-found";
 import SignIn from "@/pages/sign-in";
