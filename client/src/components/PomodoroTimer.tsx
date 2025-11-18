@@ -11,7 +11,8 @@ export function PomodoroTimer() {
 
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  const [timeLeft, setTimeLeft] = useState(settings.focus);
+  // استخدم workDuration بدل settings.focus
+  const [timeLeft, setTimeLeft] = useState(settings.workDuration * 60);
   const [isRunning, setIsRunning] = useState(false);
   const [isBreak, setIsBreak] = useState(false);
   const [sessions, setSessions] = useState(0);
@@ -21,10 +22,11 @@ export function PomodoroTimer() {
     const saved = localStorage.getItem("pomodoro");
     if (saved) {
       const data = JSON.parse(saved);
-      setTimeLeft(data.timeLeft);
-      setIsRunning(data.isRunning);
-      setIsBreak(data.isBreak);
-      setSessions(data.sessions);
+
+      setTimeLeft(Number(data.timeLeft) || settings.workDuration * 60);
+      setIsRunning(Boolean(data.isRunning));
+      setIsBreak(Boolean(data.isBreak));
+      setSessions(Number(data.sessions) || 0);
     }
   }, []);
 
@@ -36,39 +38,41 @@ export function PomodoroTimer() {
     );
   }, [timeLeft, isRunning, isBreak, sessions]);
 
-  // Always update timer length when settings change
+  // When settings change → reset timer
   useEffect(() => {
     if (!isRunning) {
-      if (!isBreak) setTimeLeft(settings.focus);
-      else setTimeLeft(settings.shortBreak);
+      setTimeLeft(
+        (isBreak ? settings.shortBreak : settings.workDuration) * 60
+      );
     }
   }, [settings]);
 
   // Timer logic
   useEffect(() => {
     if (isRunning && timeLeft > 0) {
-      intervalRef.current = setInterval(() => setTimeLeft((prev) => prev - 1), 1000);
+      intervalRef.current = setInterval(
+        () => setTimeLeft((prev) => prev - 1),
+        1000
+      );
     } else if (timeLeft === 0) {
       if (intervalRef.current) clearInterval(intervalRef.current);
 
       if (!isBreak) {
-        // Completed a focus session
+        // Focus session finished
         const newSession = sessions + 1;
         setSessions(newSession);
 
         const longBreakNow =
-          newSession % settings.sessionsBeforeLongBreak === 0;
+          newSession % settings.cyclesBeforeLongBreak === 0;
 
         setIsBreak(true);
-        setTimeLeft(longBreakNow ? settings.longBreak : settings.shortBreak);
-
-        if (settings.notifications)
-          new Notification("Session Complete!", { body: "Take a break!" });
-
+        setTimeLeft(
+          (longBreakNow ? settings.longBreak : settings.shortBreak) * 60
+        );
       } else {
-        // Completed a break
+        // Break finished
         setIsBreak(false);
-        setTimeLeft(settings.focus);
+        setTimeLeft(settings.workDuration * 60);
       }
 
       setIsRunning(false);
@@ -78,26 +82,21 @@ export function PomodoroTimer() {
   }, [isRunning, timeLeft, isBreak, sessions, settings]);
 
   const toggleTimer = () => {
-    if (!isRunning && settings.notifications && "Notification" in window) {
-      if (Notification.permission === "default") Notification.requestPermission();
-    }
     setIsRunning(!isRunning);
   };
 
   const resetTimer = () => {
     setIsRunning(false);
     setIsBreak(false);
-    setTimeLeft(settings.focus);
+    setTimeLeft(settings.workDuration * 60);
   };
 
   const minutes = Math.floor(timeLeft / 60);
   const seconds = timeLeft % 60;
 
   const total = isBreak
-    ? timeLeft === settings.longBreak
-      ? settings.longBreak
-      : settings.shortBreak
-    : settings.focus;
+    ? settings.shortBreak * 60
+    : settings.workDuration * 60;
 
   const progress = ((total - timeLeft) / total) * 100;
 
