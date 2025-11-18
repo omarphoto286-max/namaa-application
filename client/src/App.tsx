@@ -1,5 +1,3 @@
-import { useState } from "react";
-
 import { Switch, Route, Redirect } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -26,10 +24,8 @@ import Motivation from "@/pages/motivation";
 import About from "@/pages/about";
 import Settings from "@/pages/settings";
 
-// ✨ Import Splash Screen
-import SplashScreen from "./components/SplashScreen";
-
-// -----------------------------------------------------
+// ❌ شيلنا SplashScreen خلاص
+// import SplashScreen from "./components/SplashScreen";
 
 function ProtectedRoute({ component: Component }: { component: React.ComponentType }) {
   const { user, isLoading } = useAuth();
@@ -129,31 +125,19 @@ function Router() {
   );
 }
 
-// -----------------------------------------------------
-
 export default function App() {
-  const [loaded, setLoaded] = useState(false);
-
   return (
-    <>
-      {/* ✨ شاشة اللوجو أول ما الأب يفتح */}
-      {!loaded && <SplashScreen onFinish={() => setLoaded(true)} />}
-
-      {/* 👇 باقي التطبيق بعد اختفاء السبلاتش */}
-      {loaded && (
-        <QueryClientProvider client={queryClient}>
-          <ThemeProvider>
-            <LanguageProvider>
-              <AuthProvider>
-                <TooltipProvider>
-                  <Toaster />
-                  <Router />
-                </TooltipProvider>
-              </AuthProvider>
-            </LanguageProvider>
-          </ThemeProvider>
-        </QueryClientProvider>
-      )}
-    </>
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider>
+        <LanguageProvider>
+          <AuthProvider>
+            <TooltipProvider>
+              <Toaster />
+              <Router />
+            </TooltipProvider>
+          </AuthProvider>
+        </LanguageProvider>
+      </ThemeProvider>
+    </QueryClientProvider>
   );
 }
