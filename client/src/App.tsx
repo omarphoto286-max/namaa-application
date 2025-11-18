@@ -10,6 +10,9 @@ import { BottomNav } from "@/components/BottomNav";
 import { Button } from "@/components/ui/button";
 import { Moon, Sun, Globe, LogOut } from "lucide-react";
 
+// ⭐ IMPORT CONTEXT — المهم
+import { PomodoroSettingsProvider } from "@/components/PomodoroSettingsContext";
+
 import NotFound from "@/pages/not-found";
 import SignIn from "@/pages/sign-in";
 import SignUp from "@/pages/sign-up";
@@ -24,9 +27,6 @@ import Motivation from "@/pages/motivation";
 import About from "@/pages/about";
 import Settings from "@/pages/settings";
 
-// ❌ شيلنا SplashScreen خلاص
-// import SplashScreen from "./components/SplashScreen";
-
 function ProtectedRoute({ component: Component }: { component: React.ComponentType }) {
   const { user, isLoading } = useAuth();
 
@@ -38,9 +38,7 @@ function ProtectedRoute({ component: Component }: { component: React.ComponentTy
     );
   }
 
-  if (!user) {
-    return <Redirect to="/sign-in" />;
-  }
+  if (!user) return <Redirect to="/sign-in" />;
 
   return <Component />;
 }
@@ -56,9 +54,7 @@ function PublicRoute({ component: Component }: { component: React.ComponentType 
     );
   }
 
-  if (user) {
-    return <Redirect to="/" />;
-  }
+  if (user) return <Redirect to="/" />;
 
   return <Component />;
 }
@@ -77,10 +73,13 @@ function AuthenticatedLayout() {
           </h1>
           {user && (
             <p className="text-sm text-muted-foreground hidden sm:block">
-              {dir === "rtl" ? `السلام عليكم يا ${user.fullName}` : `Welcome, ${user.fullName}`}
+              {dir === "rtl"
+                ? `السلام عليكم يا ${user.fullName}`
+                : `Welcome, ${user.fullName}`}
             </p>
           )}
         </div>
+
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="icon" onClick={toggleTheme}>
             {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
@@ -131,10 +130,17 @@ export default function App() {
       <ThemeProvider>
         <LanguageProvider>
           <AuthProvider>
-            <TooltipProvider>
-              <Toaster />
-              <Router />
-            </TooltipProvider>
+
+            {/* ⭐ ضفنا الـ Pomodoro Settings Provider هنا */}
+            <PomodoroSettingsProvider>
+
+              <TooltipProvider>
+                <Toaster />
+                <Router />
+              </TooltipProvider>
+
+            </PomodoroSettingsProvider>
+
           </AuthProvider>
         </LanguageProvider>
       </ThemeProvider>
